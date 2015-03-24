@@ -1,3 +1,4 @@
+package pack;
 	import java.awt.Color;
 	import java.awt.image.BufferedImage;
 	import java.io.File;
@@ -8,13 +9,15 @@
 
 public class BlockCript {
 
-	public int[][] seeBMPImage(String BMPFileName) throws IOException {
-	    BufferedImage image = ImageIO.read(getClass().getResource(BMPFileName));
-
-	    int[][] array2D = new int[image.getWidth()][image.getHeight()];
+	public int[][] BMPImage() throws IOException {
+	    BufferedImage image = ImageIO.read(new File("plain.bmp"));
 
 	    double szerokosc = Math.ceil(image.getWidth()/3);
 	    double wysokosc = Math.ceil(image.getHeight()/4);
+	    
+	    int[][] array2D = new int[(int)(szerokosc*wysokosc)][12];
+
+
 	    
 	    for(int i=0;i<(int)szerokosc*(int)wysokosc;i++){
 		    for (int x = 0; x < 3; x++){
@@ -32,8 +35,13 @@ public class BlockCript {
 	    return array2D;
 	}
 	
-	public static void main(String[] args) {
-			
+	public static void main(String[] args) throws IOException {
+		
+		BlockCript BC = new BlockCript();
+		
+		int[][] image = BC.BMPImage();
+		
+		System.out.println(image);
 
 	}
 
