@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 
@@ -59,7 +60,7 @@ public class BlockCript {
 	    return array2D;
 	}
 	
-	public void BMPArraytoImage(int[][] imageArray) throws IOException {
+	public void BMPArraytoImage(int[][] imageArray, String saved) throws IOException {
 
 
 	    BufferedImage image = new BufferedImage((int)szerokosc*CryptX, (int)wysokosc*CryptY, BufferedImage.TYPE_INT_RGB);
@@ -86,18 +87,18 @@ public class BlockCript {
 	    	}
 	    }
 	    
-	    ImageIO.write(image, "bmp", new File("saved.bmp"));
+	    ImageIO.write(image, "bmp", new File(saved));
 	}
 	
-	public static char[] key;
 	
-	private static void ReadKey(){
+	private static char[] ReadKey(){
+		char[] key = null;
         try {
     		
             FileReader fileReader = new FileReader("key.txt");
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             String line = bufferedReader.readLine();
-            key = line.toCharArray();
+             key = line.toCharArray();
             
             if(key.length>25){
 	        	System.err.println("Niepoprawny klucz");
@@ -108,10 +109,9 @@ public class BlockCript {
     			if ((key[i] < 'a' || key[i] > 'z')){
     				throw new IllegalArgumentException("Niepoprawny znak w kluczu");
     			}
-            }
-            
             bufferedReader.close();
-            
+            return key;
+            }
     	}
 	    catch(FileNotFoundException ex) {
 	        System.err.println("Unable to open file 'key.txt'");   
@@ -127,9 +127,10 @@ public class BlockCript {
 	    	ex.printStackTrace();
 	    	System.exit(0);
 	    }
+        return key;
 	}
 	
-	private static int[] CryptLine(int[] BeforeLine){
+	private static int[] CryptLine(int[] BeforeLine, char[] key){
 		int i=0;
 		int[] AfterLine= new int[BeforeLine.length];
 		for(int j=0;j<BeforeLine.length;j++){
@@ -140,21 +141,42 @@ public class BlockCript {
 		return AfterLine;
 	}
 	
+	public int[] IV(){
+		int[] IV = new int[CryptX*CryptY];
+		Random r = new Random();
+		for(int i=0;i<CryptX*CryptY;i++){
+			IV[i]=r.nextInt()%2;
+		}
+		return IV;
+	}
 	
 	
 	public static void main(String[] args) throws IOException {
-		System.out.println("Start");
-		ReadKey();
+		System.out.println("Start ECB");
+		char[] key = ReadKey();
 		
-		BlockCript BC = new BlockCript(1,20);
+		BlockCript BC = new BlockCript(7,6);
 		int[][] image = BC.BMPImagetoArray();
 		
 		for(int j=0;j<image.length;j++){
-			image[j]=CryptLine(image[j]);
+			image[j]=CryptLine(image[j],key);
 		}
+		BC.BMPArraytoImage(image,"ecb_crypto.bmp");
+		System.out.println("Ready ECB");
 		
-		BC.BMPArraytoImage(image);
-		System.out.println("Ready");
+		System.out.println("Start CBC");
+		
+		int[] HelpVector = BC.IV();
+		
+		for(int j=0;j<image.length;j++){
+			for(int i = 0;i<HelpVector.length;i++){
+				HelpVector[i] = image[j][i]^HelpVector[i];
+			}
+			image[j]=CryptLine(HelpVector,key);
+		}
+		BC.BMPArraytoImage(image,"cbc_crypto.bmp");	
+		
+		System.out.println("Ready CBC");		
 	}
 
 }
