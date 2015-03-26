@@ -145,7 +145,7 @@ public class BlockCript {
 		int[] IV = new int[CryptX*CryptY];
 		Random r = new Random();
 		for(int i=0;i<CryptX*CryptY;i++){
-			IV[i]=r.nextInt()%2;
+			IV[i]=Math.abs(r.nextInt())%2;
 		}
 		return IV;
 	}
@@ -155,27 +155,31 @@ public class BlockCript {
 		System.out.println("Start ECB");
 		char[] key = ReadKey();
 		
-		BlockCript BC = new BlockCript(7,6);
+		BlockCript BC = new BlockCript(21,20);
 		int[][] image = BC.BMPImagetoArray();
 		
+		int[][] imageCrypt = new int[image.length][image[0].length];
+		
 		for(int j=0;j<image.length;j++){
-			image[j]=CryptLine(image[j],key);
+			imageCrypt[j]=CryptLine(image[j],key);
 		}
-		BC.BMPArraytoImage(image,"ecb_crypto.bmp");
+		BC.BMPArraytoImage(imageCrypt,"ecb_crypto.bmp");
 		System.out.println("Ready ECB");
 		
 		System.out.println("Start CBC");
 		
 		int[] HelpVector = BC.IV();
 		
+		imageCrypt = new int[image.length][image[0].length];	
+		
 		for(int j=0;j<image.length;j++){
 			for(int i = 0;i<HelpVector.length;i++){
 				HelpVector[i] = image[j][i]^HelpVector[i];
 			}
-			image[j]=CryptLine(HelpVector,key);
+			imageCrypt[j]=CryptLine(HelpVector,key);
+			HelpVector = imageCrypt[j];
 		}
-		BC.BMPArraytoImage(image,"cbc_crypto.bmp");	
-		
+		BC.BMPArraytoImage(imageCrypt,"cbc_crypto.bmp");	
 		System.out.println("Ready CBC");		
 	}
 
