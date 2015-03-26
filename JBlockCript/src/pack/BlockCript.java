@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -22,21 +23,6 @@ public class BlockCript {
 		this.CryptY=y;
 	}
 	
-	public static int[] mode(int[][] arr) {
-	    List<Integer> list = new ArrayList<Integer>();
-	    for (int i = 0; i < arr.length; i++) {
-	        for (int j = 0; j < arr[i].length; j++) { 
-	            list.add(arr[i][j]); 
-	        }
-	    }
-	    int[] vector = new int[list.size()];
-	    for (int i = 0; i < vector.length; i++) {
-	        vector[i] = list.get(i);
-	    }
-	    for(int i=0;i<vector.length;i++) System.out.print(vector[i]);
-	    return vector;
-	}
-
 	public int[][] BMPImagetoArray() throws IOException {
 		
 	    BufferedImage image = ImageIO.read(new File("plain.bmp"));
@@ -74,11 +60,34 @@ public class BlockCript {
 	}
 	
 	public void BMPArraytoImage(int[][] imageArray) throws IOException {
-	    	    
-	    System.out.println((int)szerokosc+" "+(int)wysokosc);
-	    
+
+
 	    BufferedImage image = new BufferedImage((int)szerokosc*CryptX, (int)wysokosc*CryptY, BufferedImage.TYPE_INT_RGB);
-	    image.setRGB(0, 0, (int)szerokosc*CryptX, (int)wysokosc*CryptY, mode(imageArray), 0, 0);
+	    int pozycja=0;
+	    int pozx=0,pozy=0;
+	    
+	    for(int i=0;i<(int)szerokosc*(int)wysokosc;i++){
+		    for (int y = 0; y < CryptY; y++){
+	            for (int x = 0; x < CryptX; x++){
+	                int color = imageArray[i][pozycja%(CryptX*CryptY)];
+	            	System.out.print(color);
+	                if (color==0) {
+	                    image.setRGB(CryptX*pozx+x,CryptY*pozy+y,Color.WHITE.getRGB());
+	                } 
+	                else{
+	                	image.setRGB(CryptX*pozx+x,CryptY*pozy+y,Color.BLACK.getRGB());
+	                }
+	                pozycja++;
+	            }
+	        }
+		    System.out.println();
+	    	if(pozx<szerokosc) pozx++;
+	    	if(pozx==szerokosc){
+	    		pozy++;
+	    		pozx=0;
+	    	}
+	    }
+	    
 	    ImageIO.write(image, "bmp", new File("saved.bmp"));
 	}
 	
